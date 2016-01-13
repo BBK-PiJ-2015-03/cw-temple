@@ -2,8 +2,17 @@ package student;
 
 import game.EscapeState;
 import game.ExplorationState;
+import game.NodeStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Explorer {
+    List<NodeStatus> visitedPositions = new ArrayList<>();
+    List<NodeStatus> allPositionsPassed = new ArrayList<>();
+    ExplorationState prevPosition;
+    ExplorationState startPosition;
+
 
     /**
      * Explore the cavern, trying to find the
@@ -34,7 +43,65 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        //TODO : Explore the cavern and find the orb
+        do{
+            solution(state);
+        }while(state.getDistanceToTarget() != 0);
+
+    }
+
+    public void solution(ExplorationState state){
+        int count = 0;
+        int minDist = 99999;
+        long nextMove = 0;
+        NodeStatus visiting = null;
+        for (NodeStatus neighbour : state.getNeighbours()){
+            count++;
+            allPositionsPassed.add(neighbour);
+            if(neighbour.getDistanceToTarget() < minDist || neighbour.getDistanceToTarget() == minDist
+                    && !visitedPositions.contains(neighbour)){
+                minDist = neighbour.getDistanceToTarget();
+                nextMove = neighbour.getId();
+                visiting = neighbour;
+            } else {
+                neighbour.compareTo(visiting);
+            }
+        }
+
+        visitedPositions.add(visiting);
+        state.moveTo(nextMove);
+    }
+   /* public boolean solution2(ExplorationState state){
+        for (NodeStatus neighbour : state.getNeighbours()){
+            System.out.println(neighbourToExplorationState(neighbour).getNeighbours().isEmpty());
+              //  System.out.println(nneighbour.getId() + " " + nneighbour.getDistanceToTarget());
+           // }
+        }
+        return true;
+    }*/
+
+   /* public boolean solution(ExplorationState state){
+        prevPosition = state;
+        boolean deadEnd = false;
+        for (NodeStatus neighbour : state.getNeighbours()) {
+            if(!visitedPositions.contains(neighbour)) {
+                System.out.println(neighbour.getId() + " " + neighbour.getDistanceToTarget());
+                visitedPositions.add(neighbour);
+                if( == 1 && ((ExplorationState)neighbour).getNeighbours().contains(prevPosition)){
+                    deadEnd = true;
+                    return false;
+                }
+            }
+        }
+        if(state.getDistanceToTarget() == 0){
+            System.out.println("Success");
+            return true;
+        }
+
+        return false;
+    } */
+
+    public ExplorationState neighbourToExplorationState(NodeStatus neighbour){
+       return (ExplorationState) neighbour;
     }
 
     /**
