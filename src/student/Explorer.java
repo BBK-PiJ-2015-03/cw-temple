@@ -5,10 +5,12 @@ import game.ExplorationState;
 import game.NodeStatus;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Explorer {
     Set<NodeStatus> visitedPositions = new HashSet<>();
     Set<NodeStatus> revisitedPositions = new HashSet<>();
+    Set<NodeStatus> deadEnd = new HashSet<>();
     int repeatCount = 0;
 
 
@@ -50,95 +52,112 @@ public class Explorer {
           4: 3 Neighbours - already visited, Go to the one visited earlier
           5:
          */
-       for(NodeStatus n : closestNeighbour(state)){
-           System.out.println(n.getDistanceToTarget());
-           state.moveTo(n.getId());
-       }
-        System.out.println("");
-
-        for(NodeStatus n : closestNeighbour(state)) {
-            System.out.println(n.getDistanceToTarget());
-        }
+       do{
+           solution(state);
+       }while(state.getDistanceToTarget() != 0);
     }
 
+    /**
+     * Absolute mental solution, but it works
+     *
+     * Every for loops iterates through the current neighbours in order of closest to furthest
+     *
+     * *** First Iteration ***
+     * Checks if the neighbour is unvisited and is not a dead end (which shouldn't be if its unvisited but you never know).
+     * if true it will add the neighbour to a HashSet of visitedPositions and move the explorer to that neighbour,
+     * if false it will move on to the next neighbour and repeat.
+     * if all neighbours have false conditions it will go to the second iteration.
+     *
+     * *** Second Iteration ***
+     * Checks if a neighbour has not been visited twice and is not a dead end.
+     * if true it will add to the repeatCount and also add the neighbour to a HashSet of revisitedPositions then move the explorer to that neighbour,
+     * if false it will move on to the next neighbour and repeat.
+     * if all neighbours have false conditions it will go to the third iteration.
+     *
+     * *** Third Iteration ***
+     * Checks if a neighbour has been visited twice and is not a dead end, if true it will then check for the following 3 conditions;
+     * If there is only one neighbour and if it has been visited twice, if true it will add the neighbour to a HashSet of deadEnd,
+     * If there are two neighbours and both have been visited twice, if true it will add the neighbour to a HashSet of deadEnd,
+     * If there are three neighbours and all have been visited twice, if true it will add the neighbour to a HashSet of deadEnd,
+     * if true it will add to the repeatCount and also add the neighbour to a HashSet of revisitedPositions then move the explorer to that neighbour,
+     * if false it will move on to the next neighbour and repeat.
+     * if all neighbours have false conditions it will go to the fourth iteration.
+     *
+     * WILL CONTINUE THIS AFTER SOME SLEEP... 4.31AM !
+     *
+     * @param state of the explorer
+     */
     public void solution(ExplorationState state) {
-        List<NodeStatus> n = closestNeighbour(state);
-            /*if (!visitedCheck(n)) {
+        for(NodeStatus n : closestNeighbour(state)) {
+            if (!visitedCheck(n) && !deadEndCheck(n)) {
                 visitedPositions.add(n);
                 state.moveTo(n.getId());
                 return;
             }
-            if (!visitedTwiceCheck(n)) {
+        }
+        for(NodeStatus n : closestNeighbour(state)) {
+            if (!visitedTwiceCheck(n) && !deadEndCheck(n)) {
                 repeatCount++;
                 revisitedPositions.add(n);
                 state.moveTo(n.getId());
                 return;
-            }*/
-        /*for (NodeStatus n : state.getNeighbours()) {
-            if (visitedTwiceCheck(n) && visitedCheck(n)) {
-                state.moveTo(revisitedPositions.get(revisitedPositions.size()-repeatCount).getId());
-                System.out.println("VISITING LIST: " + repeatCount);
+            }
+        }
+        for(NodeStatus n : closestNeighbour(state)) {
+            if (visitedTwiceCheck(n) && !deadEndCheck(n)) {
+                if(closestNeighbour(state).size() == 1 && visitedTwiceCheck(n)){
+                    deadEnd.add(n);
+                }
+                if(closestNeighbour(state).size() == 2 && visitedTwiceCheck(n)
+                        && visitedTwiceCheck(closestNeighbour(state).get(1)) ){
+                    deadEnd.add(n);
+                }
+                if(closestNeighbour(state).size() == 3 && visitedTwiceCheck(n)
+                        && visitedTwiceCheck(closestNeighbour(state).get(1))
+                        && visitedTwiceCheck(closestNeighbour(state).get(2))){
+                    deadEnd.add(n);
+                }
+                repeatCount++;
+                state.moveTo(n.getId());
                 return;
             }
-        }*/
-
+        }
+        for(NodeStatus n : closestNeighbour(state)) {
+            if(closestNeighbour(state).size() == 2 && deadEndCheck(n)
+                    && deadEndCheck(closestNeighbour(state).get(1))){
+                for(int i = 0; i < repeatCount; i++){
+                    state.moveTo(closestNeighbour(state).get(1).getId());
+                }
+                return;
+            }
+            if(closestNeighbour(state).size() == 3 && deadEndCheck(n)
+                    && deadEndCheck(closestNeighbour(state).get(1))
+                    && deadEndCheck(closestNeighbour(state).get(2))) {
+                for (int i = 0; i < repeatCount; i++) {
+                    state.moveTo(closestNeighbour(state).get(2).getId());
+                }
+                return;
+            }
+        }
     }
 
     public List<NodeStatus> closestNeighbour(ExplorationState state) {
-        int min = 9999;
-        List<NodeStatus> closest = new ArrayList<>();
-        for (NodeStatus n : state.getNeighbours()) {
-            closest.add(n);
-        }
-        Collections.sort(closest, (id1, id2) -> id1.compareTo(id2));
+        List<NodeStatus> closest = state.getNeighbours().stream().collect(Collectors.toList());
+        Collections.sort(closest, NodeStatus::compareTo);
         return closest;
     }
 
     public boolean visitedCheck(NodeStatus n){
-        if(visitedPositions.contains(n)){
-            return true;
-        }
-        return false;
+        return visitedPositions.contains(n);
     }
 
     public boolean visitedTwiceCheck(NodeStatus n){
-        if(revisitedPositions.contains(n)){
-            return true;
-        }
-        return false;
+        return revisitedPositions.contains(n);
     }
 
-   /* public boolean solution2(ExplorationState state){
-        for (NodeStatus neighbour : state.getNeighbours()){
-            System.out.println(neighbourToExplorationState(neighbour).getNeighbours().isEmpty());
-              //  System.out.println(nneighbour.getId() + " " + nneighbour.getDistanceToTarget());
-           // }
-        }
-        return true;
-    }*/
-
-   /* public boolean solution(ExplorationState state){
-        prevPosition = state;
-        boolean deadEnd = false;
-        for (NodeStatus neighbour : state.getNeighbours()) {
-            if(!visitedPositions.contains(neighbour)) {
-                System.out.println(neighbour.getId() + " " + neighbour.getDistanceToTarget());
-                visitedPositions.add(neighbour);
-                if( == 1 && ((ExplorationState)neighbour).getNeighbours().contains(prevPosition)){
-                    deadEnd = true;
-                    return false;
-                }
-            }
-        }
-        if(state.getDistanceToTarget() == 0){
-            System.out.println("Success");
-            return true;
-        }
-
-        return false;
-    } */
-
-
+    public boolean deadEndCheck(NodeStatus n){
+        return deadEnd.contains(n);
+    }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
