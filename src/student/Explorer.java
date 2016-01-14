@@ -4,12 +4,11 @@ import game.EscapeState;
 import game.ExplorationState;
 import game.NodeStatus;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Explorer {
-    List<NodeStatus> visitedPositions = new ArrayList<>();
-    List<NodeStatus> revisitedPositions = new ArrayList<>();
+    Set<NodeStatus> visitedPositions = new HashSet<>();
+    Set<NodeStatus> revisitedPositions = new HashSet<>();
     int repeatCount = 0;
 
 
@@ -51,15 +50,20 @@ public class Explorer {
           4: 3 Neighbours - already visited, Go to the one visited earlier
           5:
          */
-        do {
-            solution(state);
-        }while(state.getDistanceToTarget() != 0);
+       for(NodeStatus n : closestNeighbour(state)){
+           System.out.println(n.getDistanceToTarget());
+           state.moveTo(n.getId());
+       }
+        System.out.println("");
 
+        for(NodeStatus n : closestNeighbour(state)) {
+            System.out.println(n.getDistanceToTarget());
+        }
     }
 
     public void solution(ExplorationState state) {
-        NodeStatus n = closestNeighbour(state);
-            if (!visitedCheck(n)) {
+        List<NodeStatus> n = closestNeighbour(state);
+            /*if (!visitedCheck(n)) {
                 visitedPositions.add(n);
                 state.moveTo(n.getId());
                 return;
@@ -69,7 +73,7 @@ public class Explorer {
                 revisitedPositions.add(n);
                 state.moveTo(n.getId());
                 return;
-            }
+            }*/
         /*for (NodeStatus n : state.getNeighbours()) {
             if (visitedTwiceCheck(n) && visitedCheck(n)) {
                 state.moveTo(revisitedPositions.get(revisitedPositions.size()-repeatCount).getId());
@@ -80,15 +84,13 @@ public class Explorer {
 
     }
 
-    public NodeStatus closestNeighbour(ExplorationState state) {
+    public List<NodeStatus> closestNeighbour(ExplorationState state) {
         int min = 9999;
-        NodeStatus closest = null;
+        List<NodeStatus> closest = new ArrayList<>();
         for (NodeStatus n : state.getNeighbours()) {
-            if (n.getDistanceToTarget() < min) {
-                closest = n;
-                min = n.getDistanceToTarget();
-            }
+            closest.add(n);
         }
+        Collections.sort(closest, (id1, id2) -> id1.compareTo(id2));
         return closest;
     }
 
