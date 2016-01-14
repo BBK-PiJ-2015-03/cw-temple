@@ -9,9 +9,11 @@ import java.util.List;
 
 public class Explorer {
     List<NodeStatus> visitedPositions = new ArrayList<>();
+    List<NodeStatus> revisitedPositions = new ArrayList<>();
     List<NodeStatus> allPositionsPassed = new ArrayList<>();
-    ExplorationState prevPosition;
-    ExplorationState startPosition;
+    int prevMove = 9999;
+    int holdMove = 9999;
+    int repeatCount = 0;
 
 
     /**
@@ -53,19 +55,25 @@ public class Explorer {
         int count = 0;
         int minDist = 99999;
         long nextMove = 0;
+        prevMove = holdMove;
+        long holdMove = state.getCurrentLocation();
         NodeStatus visiting = null;
         for (NodeStatus neighbour : state.getNeighbours()){
             count++;
             allPositionsPassed.add(neighbour);
             if(neighbour.getDistanceToTarget() < minDist || neighbour.getDistanceToTarget() == minDist
-                    && !visitedPositions.contains(neighbour)){
-                minDist = neighbour.getDistanceToTarget();
-                nextMove = neighbour.getId();
-                visiting = neighbour;
-            } else {
-                neighbour.compareTo(visiting);
+                    && !visitedPositions.contains(neighbour)) {
+                if (repeatCount < 4) {
+                    minDist = neighbour.getDistanceToTarget();
+                    nextMove = neighbour.getId();
+                    visiting = neighbour;
+                    if (nextMove == prevMove) {
+                        repeatCount++;
+                    }
+                }
             }
         }
+        repeatCount = 0;
 
         visitedPositions.add(visiting);
         state.moveTo(nextMove);
@@ -100,9 +108,7 @@ public class Explorer {
         return false;
     } */
 
-    public ExplorationState neighbourToExplorationState(NodeStatus neighbour){
-       return (ExplorationState) neighbour;
-    }
+
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
