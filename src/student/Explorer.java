@@ -72,14 +72,6 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        /*
-        Scenarios
-          1: X Unvisited Neighbours - Go to neighbour closest to orb (only neighbour)
-          2: 1 Neighbour - already visited, Go to neighbour
-          3: 2 Neighbours - already visited, Go to the one visited earlier
-          4: 3 Neighbours - already visited, Go to the one visited earlier
-          5:
-         */
        do{
            solution(state);
        }while(state.getDistanceToTarget() != 0);
