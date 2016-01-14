@@ -13,7 +13,35 @@ public class Explorer {
     Set<NodeStatus> deadEnd = new HashSet<>();
     int repeatCount = 0;
 
+    /**
+     * Checks if a neighbour has been visited already.
+     *
+     * @param neighbour to check
+     * @return boolean true if neighbour has been visited, false if neighbour has not been visited.
+     */
+    public boolean visitedCheck(NodeStatus neighbour){
+        return visitedPositions.contains(neighbour);
+    }
 
+    /**
+     * Checks if a neighbour has been visited twice.
+     *
+     * @param neighbour to check
+     * @return boolean true if neighbour has been visited twice, false if neighbour has not been visited twice.
+     */
+    public boolean visitedTwiceCheck(NodeStatus neighbour){
+        return revisitedPositions.contains(neighbour);
+    }
+
+    /**
+     * Checks if a neighbour has been marked as a dead end.
+     *
+     * @param neighbour to check
+     * @return boolean true if neighbour is dead end, false if neighbour has not a dead end.
+     */
+    public boolean deadEndCheck(NodeStatus neighbour){
+        return deadEnd.contains(neighbour);
+    }
 
     /**
      * Explore the cavern, trying to find the
@@ -88,49 +116,54 @@ public class Explorer {
      * @param state of the explorer
      */
     public void solution(ExplorationState state) {
-        for(NodeStatus n : closestNeighbour(state)) {
-            if (!visitedCheck(n) && !deadEndCheck(n)) {
-                visitedPositions.add(n);
-                state.moveTo(n.getId());
+        for(NodeStatus neighbour : closestNeighbour(state)) {
+            if (!visitedCheck(neighbour) && !deadEndCheck(neighbour)) {
+                visitedPositions.add(neighbour);
+                state.moveTo(neighbour.getId());
                 return;
             }
         }
-        for(NodeStatus n : closestNeighbour(state)) {
-            if (!visitedTwiceCheck(n) && !deadEndCheck(n)) {
+        for(NodeStatus neighbour : closestNeighbour(state)) {
+            if (!visitedTwiceCheck(neighbour) && !deadEndCheck(neighbour)) {
                 repeatCount++;
-                revisitedPositions.add(n);
-                state.moveTo(n.getId());
+                revisitedPositions.add(neighbour);
+                state.moveTo(neighbour.getId());
                 return;
             }
         }
-        for(NodeStatus n : closestNeighbour(state)) {
-            if (visitedTwiceCheck(n) && !deadEndCheck(n)) {
-                if(closestNeighbour(state).size() == 1 && visitedTwiceCheck(n)){
-                    deadEnd.add(n);
+        for(NodeStatus neighbour : closestNeighbour(state)) {
+            if (visitedTwiceCheck(neighbour) && !deadEndCheck(neighbour)) {
+                if(closestNeighbour(state).size() == 1 && visitedTwiceCheck(neighbour)){
+                    deadEnd.add(neighbour);
                 }
-                if(closestNeighbour(state).size() == 2 && visitedTwiceCheck(n)
+                if(closestNeighbour(state).size() == 2 && visitedTwiceCheck(neighbour)
                         && visitedTwiceCheck(closestNeighbour(state).get(1)) ){
-                    deadEnd.add(n);
+                    deadEnd.add(neighbour);
                 }
-                if(closestNeighbour(state).size() == 3 && visitedTwiceCheck(n)
+                if(closestNeighbour(state).size() == 3 && visitedTwiceCheck(neighbour)
                         && visitedTwiceCheck(closestNeighbour(state).get(1))
                         && visitedTwiceCheck(closestNeighbour(state).get(2))){
-                    deadEnd.add(n);
+                    deadEnd.add(neighbour);
                 }
                 repeatCount++;
-                state.moveTo(n.getId());
+                state.moveTo(neighbour.getId());
                 return;
             }
         }
-        for(NodeStatus n : closestNeighbour(state)) {
-            if(closestNeighbour(state).size() == 2 && deadEndCheck(n)
+        for(NodeStatus neighbour : closestNeighbour(state)) {
+            if(closestNeighbour(state).size() == 1 && deadEndCheck(neighbour)){
+                for(int i = 0; i < repeatCount; i++){
+                    state.moveTo(closestNeighbour(state).get(0).getId());
+                }
+            }
+            if(closestNeighbour(state).size() == 2 && deadEndCheck(neighbour)
                     && deadEndCheck(closestNeighbour(state).get(1))){
                 for(int i = 0; i < repeatCount; i++){
                     state.moveTo(closestNeighbour(state).get(1).getId());
                 }
                 return;
             }
-            if(closestNeighbour(state).size() == 3 && deadEndCheck(n)
+            if(closestNeighbour(state).size() == 3 && deadEndCheck(neighbour)
                     && deadEndCheck(closestNeighbour(state).get(1))
                     && deadEndCheck(closestNeighbour(state).get(2))) {
                 for (int i = 0; i < repeatCount; i++) {
@@ -141,22 +174,17 @@ public class Explorer {
         }
     }
 
+    /**
+     * Arranges closes neighbours in a List of NodeStatus, sorts this list by comparing neighbours distance to
+     * target and arranges it in acceding order.
+     *
+     * @param state the explorer is currently at
+     * @return a sorted list of closest neighbours.
+     */
     public List<NodeStatus> closestNeighbour(ExplorationState state) {
         List<NodeStatus> closest = state.getNeighbours().stream().collect(Collectors.toList());
         Collections.sort(closest, NodeStatus::compareTo);
         return closest;
-    }
-
-    public boolean visitedCheck(NodeStatus n){
-        return visitedPositions.contains(n);
-    }
-
-    public boolean visitedTwiceCheck(NodeStatus n){
-        return revisitedPositions.contains(n);
-    }
-
-    public boolean deadEndCheck(NodeStatus n){
-        return deadEnd.contains(n);
     }
 
     /**
@@ -183,6 +211,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
+
         //TODO: Escape from the cavern before time runs out
     }
 }
