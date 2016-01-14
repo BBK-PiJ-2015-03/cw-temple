@@ -10,10 +10,8 @@ import java.util.List;
 public class Explorer {
     List<NodeStatus> visitedPositions = new ArrayList<>();
     List<NodeStatus> revisitedPositions = new ArrayList<>();
-    List<NodeStatus> allPositionsPassed = new ArrayList<>();
-    int prevMove = 9999;
-    int holdMove = 9999;
     int repeatCount = 0;
+
 
 
     /**
@@ -45,39 +43,69 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        do{
+        /*
+        Scenarios
+          1: X Unvisited Neighbours - Go to neighbour closest to orb (only neighbour)
+          2: 1 Neighbour - already visited, Go to neighbour
+          3: 2 Neighbours - already visited, Go to the one visited earlier
+          4: 3 Neighbours - already visited, Go to the one visited earlier
+          5:
+         */
+        do {
             solution(state);
         }while(state.getDistanceToTarget() != 0);
 
     }
 
-    public void solution(ExplorationState state){
-        int count = 0;
-        int minDist = 99999;
-        long nextMove = 0;
-        prevMove = holdMove;
-        long holdMove = state.getCurrentLocation();
-        NodeStatus visiting = null;
-        for (NodeStatus neighbour : state.getNeighbours()){
-            count++;
-            allPositionsPassed.add(neighbour);
-            if(neighbour.getDistanceToTarget() < minDist || neighbour.getDistanceToTarget() == minDist
-                    && !visitedPositions.contains(neighbour)) {
-                if (repeatCount < 4) {
-                    minDist = neighbour.getDistanceToTarget();
-                    nextMove = neighbour.getId();
-                    visiting = neighbour;
-                    if (nextMove == prevMove) {
-                        repeatCount++;
-                    }
-                }
+    public void solution(ExplorationState state) {
+        NodeStatus n = closestNeighbour(state);
+            if (!visitedCheck(n)) {
+                visitedPositions.add(n);
+                state.moveTo(n.getId());
+                return;
+            }
+            if (!visitedTwiceCheck(n)) {
+                repeatCount++;
+                revisitedPositions.add(n);
+                state.moveTo(n.getId());
+                return;
+            }
+        /*for (NodeStatus n : state.getNeighbours()) {
+            if (visitedTwiceCheck(n) && visitedCheck(n)) {
+                state.moveTo(revisitedPositions.get(revisitedPositions.size()-repeatCount).getId());
+                System.out.println("VISITING LIST: " + repeatCount);
+                return;
+            }
+        }*/
+
+    }
+
+    public NodeStatus closestNeighbour(ExplorationState state) {
+        int min = 9999;
+        NodeStatus closest = null;
+        for (NodeStatus n : state.getNeighbours()) {
+            if (n.getDistanceToTarget() < min) {
+                closest = n;
+                min = n.getDistanceToTarget();
             }
         }
-        repeatCount = 0;
-
-        visitedPositions.add(visiting);
-        state.moveTo(nextMove);
+        return closest;
     }
+
+    public boolean visitedCheck(NodeStatus n){
+        if(visitedPositions.contains(n)){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean visitedTwiceCheck(NodeStatus n){
+        if(revisitedPositions.contains(n)){
+            return true;
+        }
+        return false;
+    }
+
    /* public boolean solution2(ExplorationState state){
         for (NodeStatus neighbour : state.getNeighbours()){
             System.out.println(neighbourToExplorationState(neighbour).getNeighbours().isEmpty());
