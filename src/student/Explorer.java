@@ -195,17 +195,17 @@ public class Explorer {
 
     public void backTrack(ExplorationState state){
         pathTaken.pop();
-        System.out.println("backtrack");
+       // System.out.println("backtrack");
         do {
-            if (earlierVisitInStack(state) != state.getCurrentLocation()) {
-                //  pathTaken.push(earlierVisitInStack(state));
+            /*if (earlierVisitInStack(state) != state.getCurrentLocation()) {
+                pathTaken.push(earlierVisitInStack(state));
                 state.moveTo(earlierVisitInStack(state));
                 System.out.println("backtrack");
-            } else {
+            } else {*/
                 System.out.println();
                 lastPopped = pathTaken.pop();
                 state.moveTo(lastPopped);
-            }
+          //  }
         }while (!unvisitedNeighbours(state));
             pathTaken.push(lastPopped);
       /*  closestNeighbour(state).stream().filter(neighbour -> closestNeighbour(state).size() == 1 && deadEndCheck(neighbour)).forEach(neighbour -> {
@@ -273,7 +273,7 @@ public class Explorer {
     }
 
     public Long earlierVisitInStack(ExplorationState state){
-        for(int i = 0; i < stackToList().size(); i++){
+        for(int i = 0; i < stackToList().size()-1; i++){
             for (NodeStatus neighbour : state.getNeighbours()) {
                 if(stackToList().get(i) == neighbour.getId()){
                     while (pathTaken.peek() != neighbour.getId()){
