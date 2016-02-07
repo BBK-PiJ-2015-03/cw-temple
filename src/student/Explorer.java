@@ -74,9 +74,9 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-       do{
-           exploreSolution(state);
-       }while(state.getDistanceToTarget() != 0);
+        do{
+            exploreSolution(state);
+        }while(state.getDistanceToTarget() != 0);
     }
 
     /**
@@ -195,19 +195,19 @@ public class Explorer {
 
     public void backTrack(ExplorationState state){
         pathTaken.pop();
-       // System.out.println("backtrack");
+        // System.out.println("backtrack");
         do {
             /*if (earlierVisitInStack(state) != state.getCurrentLocation()) {
                 pathTaken.push(earlierVisitInStack(state));
                 state.moveTo(earlierVisitInStack(state));
                 System.out.println("backtrack");
             } else {*/
-                System.out.println();
-                lastPopped = pathTaken.pop();
-                state.moveTo(lastPopped);
-          //  }
+            System.out.println();
+            lastPopped = pathTaken.pop();
+            state.moveTo(lastPopped);
+            //  }
         }while (!unvisitedNeighbours(state));
-            pathTaken.push(lastPopped);
+        pathTaken.push(lastPopped);
       /*  closestNeighbour(state).stream().filter(neighbour -> closestNeighbour(state).size() == 1 && deadEndCheck(neighbour)).forEach(neighbour -> {
             state.moveTo(pathTaken.pop());
         });*/
@@ -329,3 +329,4 @@ public class Explorer {
 
     }
 }
+
