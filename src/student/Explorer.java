@@ -2,18 +2,26 @@
 
 package student;
 
-import game.*;
+import game.EscapeState;
+import game.ExplorationState;
+import game.Node;
+import game.NodeStatus;
+import student.NodeTree.ExploreTreeNode;
+import student.NodeTree.ExploreTreeWrap;
 import student.NodeTree.TreeNode;
-import student.NodeTree.TreeWrap;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Explorer {
     private TreeNode root = null;
-    private TreeNode pathTree = new TreeNode(null);
-    private TreeNode parentNode = new TreeNode(null);
+    private TreeNode pathTree = new ExploreTreeNode(null);
+    private TreeNode parentNode = new ExploreTreeNode(null);
     private Set<Long> visitedNodes = new HashSet<>();
+    private Stack<Node> solutionPath = new Stack<>();
+    private long MAX_VALUE = Integer.MAX_VALUE;
+    private Set<EscapeNode> escapeNodes = new HashSet<>();
+
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -48,7 +56,7 @@ public class Explorer {
     public void explore(ExplorationState state) {
         root = pathTree;
         parentNode = root;
-        pathTree.setInfo(new TreeWrap(state.getCurrentLocation(), null));
+        pathTree.setInfo(new ExploreTreeWrap(state.getCurrentLocation(), null));
         addNeighbours(state);
         moveTo(state);
     }
@@ -56,19 +64,18 @@ public class Explorer {
     public void addNeighbours(ExplorationState state){
         List<NodeStatus> neighbours = closestNeighbour(state);
         if(pathTree.getInfo().getNode().equals(root.getInfo().getNode())) {
-            pathTree.exploreAdd(neighbours.get(0), 0);
+            pathTree.add(neighbours.get(0), 0);
             return;
         }
         for(int i = 0; i < neighbours.size(); i++) {
             if(neighbours.get(i).getId() != pathTree.getInfo().getNode()){
-                pathTree.exploreAdd(neighbours.get(i), i);
+                pathTree.add(neighbours.get(i), i);
             }
         }
     }
 
     public void moveTo(ExplorationState state){
         do {
-            boolean visited = false;
             if(pathTree.getlLink() != null && !visitedNodes.contains(pathTree.getlLink().getInfo().getNode())){
                 state.moveTo(pathTree.getlLink().getInfo().getNode());
                 visitedNodes.add(pathTree.getlLink().getInfo().getNode());
@@ -102,21 +109,6 @@ public class Explorer {
         return pathTree.getInfo().getNode();
     }
 
-    public void printTree(TreeNode pointer, String location){
-        if(pointer.getlLink() != null) {
-            printTree(pointer.getlLink(), "Left");
-        }
-        if(pointer.getmLink() != null) {
-            printTree(pointer.getmLink(), "Middle");
-        }
-        if(pointer.getrLink() != null) {
-            printTree(pointer.getrLink(), "Right");
-        }
-    }
-
-    public void countTree(){
-
-    }
 
     public List<NodeStatus> closestNeighbour(ExplorationState state) {
         List<NodeStatus> closest = state.getNeighbours().stream().collect(Collectors.toList());
@@ -148,14 +140,111 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        List<Node> vertices = state.getVertices().stream().collect(Collectors.toList());
-        pathTree = new TreeNode(null);
-        parentNode = pathTree;
-        root = pathTree;
+        System.out.println(state.getVertices().size());
+        escapeNodes = state.getVertices()
+                                        .stream()
+                                        .map(node -> new EscapeNode(node, MAX_VALUE, false, null))
+                                        .collect(Collectors.toSet());
+
+        Stack<EscapeState> escapePath;
+        escapeNodes.stream()
+                         .filter(node -> state.getCurrentNode()
+                         .equals(node.getNode()))
+                         .forEach(node -> { state.getCurrentNode();
+                             for (Node neighbour : state.getCurrentNode().getNeighbours()) {
+                                node.setDistance(node.getNode().getEdge(neighbour).length);
+                                System.out.println(node.getDistance());
+                            }
+        });
+
+        nodeMapper(state.getCurrentNode(), state.getExit());
 
 
 
 
-        //TODO: Escape from the cavern before time runs out
+
     }
+
+    public void nodeMapper(Node state, Node exit){
+        for (Node neighbour : state.getNeighbours()){
+            updateEscapeNode(neighbour, state.getEdge(neighbour).length);
+        }
+        state = closestNeighbour(state);
+        if(!state.equals(exit)){
+            nodeMapper(state, exit);
+        }
+        return;
+    }
+
+    public void updateEscapeNode(Node node, long length){
+        escapeNodes.stream().filter(curNode -> node.equals(curNode.getNode())).forEach(curNode -> {
+            curNode.setDistance(length);
+            curNode.setVisited(true);
+        });
+    }
+
+    public Node closestNeighbour(Node node){
+        long min = Integer.MAX_VALUE, cur = 0;
+        Node returnNode = node;
+        for(Node neighbour : node.getNeighbours()) {
+            for (EscapeNode curNode : escapeNodes) {
+                if (curNode.equals(neighbour)) {
+                    cur = curNode.getDistance();
+                    if (cur < min) {
+                        min = cur;
+                        returnNode = curNode.getNode();
+                    }
+                }
+            }
+        }
+        return returnNode;
+    }
+
+
+  /*      if(state.equals(target)){
+            return escapeSolution;
+        }
+        for (ExplorationState neighbour : state.getNeighbours()) {
+            if(state.getEdge(neighbour).length < timeRemaining){
+                moveTo();
+            }
+        }
+        escapeSolution.clear();
+        return escapeSolution;
+    }
+
+   public List<Node> escapePlan(EscapeState state){
+        root = pathTree;
+        parentNode = root;
+        pathTree.setInfo(new TreeWrap(state.getCurrentNode().getId(), null, state.getCurrentNode().getEdge(state.getCurrentNode()).length(), state.getCurrentNode().getTile().getGold()));
+        List<Node> nodeList = new ArrayList<>();
+        state.getCurrentNode().getEdge(state.getCurrentNode());
+        do {
+            if(pathTree.getlLink() != null && !visitedNodes.contains(pathTree.getlLink().getInfo().getNode())){
+                state.moveTo(pathTree.getlLink().getInfo().getNode());
+                visitedNodes.add(pathTree.getlLink().getInfo().getNode());
+                parentNode = pathTree;
+                pathTree = pathTree.getlLink();
+                pathTree.getInfo().setVisited(true);
+                addNeighbours(state);
+            } else if(pathTree.getmLink() != null && !visitedNodes.contains(pathTree.getmLink().getInfo().getNode())){
+                state.moveTo(pathTree.getmLink().getInfo().getNode());
+                visitedNodes.add(pathTree.getmLink().getInfo().getNode());
+                parentNode = pathTree;
+                pathTree = pathTree.getmLink();
+                pathTree.getInfo().setVisited(true);
+                addNeighbours(state);
+            } else if(pathTree.getrLink() != null && !visitedNodes.contains(pathTree.getrLink().getInfo().getNode())){
+                state.moveTo(pathTree.getrLink().getInfo().getNode());
+                visitedNodes.add(pathTree.getrLink().getInfo().getNode());
+                parentNode = pathTree;
+                pathTree = pathTree.getrLink();
+                pathTree.getInfo().setVisited(true);
+                addNeighbours(state);
+            } else {
+                state.moveTo(backTrack());
+            }
+        }while (state.getDistanceToTarget() != 0);
+        return nodeList;
+    }*/
 }
