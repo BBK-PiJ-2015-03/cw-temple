@@ -4,15 +4,16 @@ package student;
 
 import game.EscapeState;
 import game.ExplorationState;
-import game.Node;
 import game.NodeStatus;
 import student.EscapeAlgorithm.Escape;
-import student.ExploreTree.EscapeNode;
 import student.ExploreTree.ExploreTreeNode;
 import student.ExploreTree.ExploreTreeWrap;
 import student.ExploreTree.TreeNode;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Explorer {
@@ -20,9 +21,7 @@ public class Explorer {
     private TreeNode pathTree = new ExploreTreeNode(null);
     private TreeNode parentNode = new ExploreTreeNode(null);
     private Set<Long> visitedNodes = new HashSet<>();
-    private Stack<Node> solutionPath = new Stack<>();
-    private long MAX_VALUE = Integer.MAX_VALUE;
-    private Set<EscapeNode> escapeNodes = new HashSet<>();
+
 
 
     /**
@@ -109,7 +108,10 @@ public class Explorer {
                 pathTree.getInfo().setVisited(true);
                 addNeighbours(state);
             } else {
-                state.moveTo(backTrack());
+                long id = backTrack();
+                if (id == state.getCurrentLocation()){
+                    break;
+                } else state.moveTo(id);
             }
         }while (state.getDistanceToTarget() != 0);
     }
@@ -120,7 +122,9 @@ public class Explorer {
      */
     public Long backTrack(){
         pathTree = parentNode;
-        parentNode = pathTree.getParentNode();
+        if(pathTree.getParentNode() != null) {
+            parentNode = pathTree.getParentNode();
+        }
         return pathTree.getInfo().getNode();
     }
 
@@ -162,125 +166,4 @@ public class Explorer {
         Escape start = new Escape();
         start.run(state);
     }
-
-
-
-
-
-
-    /**
-     * Below was my first few attempts, drove me mad and caused a stack overflow.
-     * Rarely worked and have really stuggled with recursion.
-     *
-     * I have spent many days trying to get the escape state working and have failed,
-     * Will attempt it again using various classes but do not have much time before due date.
-     */
-//    public void escape(EscapeState state) {
-//        System.out.println(state.getVertices().size());
-//        escapeNodes = state.getVertices()
-//                                        .stream()
-//                                        .map(node -> new EscapeNode(node, MAX_VALUE, false, null))
-//                                        .collect(Collectors.toSet());
-//
-//        Stack<EscapeState> escapePath;
-//        escapeNodes.stream()
-//                         .filter(node -> state.getCurrentNode()
-//                         .equals(node.getNode()))
-//                         .forEach(node -> { state.getCurrentNode();
-//                             for (Node neighbour : state.getCurrentNode().getNeighbours()) {
-//                                node.setDistance(node.getNode().getEdge(neighbour).length);
-//                                System.out.println(node.getDistance());
-//                            }
-//        });
-//
-//        nodeMapper(state.getCurrentNode(), state.getExit());
-//
-//
-//
-//
-//    }
-//
-//    public void nodeMapper(Node state, Node exit){
-//        for (Node neighbour : state.getNeighbours()){
-//            updateEscapeNode(neighbour, state.getEdge(neighbour).length);
-//        }
-//        state = closestNeighbour(state);
-//        if(!state.equals(exit)){
-//            nodeMapper(state, exit);
-//        }
-//        return;
-//    }
-//
-//    public void updateEscapeNode(Node node, long length){
-//        escapeNodes.stream().filter(curNode -> node.equals(curNode.getNode())).forEach(curNode -> {
-//            curNode.setDistance(length);
-//            curNode.setVisited(true);
-//        });
-//    }
-//
-//    public Node closestNeighbour(Node node){
-//        long min = Integer.MAX_VALUE, cur = 0;
-//        Node returnNode = node;
-//        for(Node neighbour : node.getNeighbours()) {
-//            for (EscapeNode curNode : escapeNodes) {
-//                if (curNode.equals(neighbour)) {
-//                    cur = curNode.getDistance();
-//                    if (cur < min) {
-//                        min = cur;
-//                        returnNode = curNode.getNode();
-//                    }
-//                }
-//            }
-//        }
-//        return returnNode;
-//    }
-
-
-
-  /*      if(state.equals(target)){
-            return escapeSolution;
-        }
-        for (ExplorationState neighbour : state.getNeighbours()) {
-            if(state.getEdge(neighbour).length < timeRemaining){
-                moveTo();
-            }
-        }
-        escapeSolution.clear();
-        return escapeSolution;
-    }
-
-   public List<Node> escapePlan(EscapeState state){
-        root = pathTree;
-        parentNode = root;
-        pathTree.setInfo(new TreeWrap(state.getCurrentNode().getId(), null, state.getCurrentNode().getEdge(state.getCurrentNode()).length(), state.getCurrentNode().getTile().getGold()));
-        List<Node> nodeList = new ArrayList<>();
-        state.getCurrentNode().getEdge(state.getCurrentNode());
-        do {
-            if(pathTree.getlLink() != null && !visitedNodes.contains(pathTree.getlLink().getInfo().getNode())){
-                state.moveTo(pathTree.getlLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getlLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getlLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else if(pathTree.getmLink() != null && !visitedNodes.contains(pathTree.getmLink().getInfo().getNode())){
-                state.moveTo(pathTree.getmLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getmLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getmLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else if(pathTree.getrLink() != null && !visitedNodes.contains(pathTree.getrLink().getInfo().getNode())){
-                state.moveTo(pathTree.getrLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getrLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getrLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else {
-                state.moveTo(backTrack());
-            }
-        }while (state.getDistanceToTarget() != 0);
-        return nodeList;
-    }*/
 }
