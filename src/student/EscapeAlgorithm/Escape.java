@@ -39,7 +39,12 @@ public class Escape {
             }
             visited.add(currentVertex);
             unvisited.remove(currentVertex);
-            Vertex temp = unvisited.stream().sorted(Vertex::compareTo).findFirst().get();
+            Vertex temp;
+            if (unvisited.size() > 0) {
+                temp = unvisited.stream().sorted(Vertex::compareTo).findFirst().get();
+            } else {
+                break;
+            }
             if (temp.getCost() == Long.MAX_VALUE) {
                 break;
             } else {
