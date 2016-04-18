@@ -3,7 +3,7 @@ package student.EscapeAlgorithm;
 import game.Node;
 
 /**
- * Created by J2FX on 18/04/2016.
+ * Vertex wrapper class, this will hold the distance of a node and the node itself.
  */
 public class Vertex implements Comparable<Vertex>{
     long cost = Long.MAX_VALUE;
@@ -29,6 +29,12 @@ public class Vertex implements Comparable<Vertex>{
         this.node = node;
     }
 
+    /**
+     * Compare a vertex by distance (cost) and return the 'cheapest'
+     *
+     * @param vertex to compare
+     * @return closest vertex - boolean
+     */
     @Override
     public int compareTo(Vertex o) {
         if (cost > o.getCost()) {

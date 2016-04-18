@@ -10,7 +10,7 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
- * Created by J2FX on 18/04/2016.
+ * Escape class using Djistra algorithm
  */
 public class Escape {
     private Vertex startingVertex;
@@ -20,6 +20,10 @@ public class Escape {
     private Set<Vertex> all = new HashSet<>();
     private Stack<Node> route = new Stack<>();
 
+    /**
+     * Calculates distanced of all vertexes.
+     * @param state
+     */
     public void run(EscapeState state){
         all.addAll(state.getVertices().stream().map(Vertex::new).collect(Collectors.toList()));
         all.stream().forEach(v -> unvisited.add(v));
@@ -56,6 +60,11 @@ public class Escape {
         moveToExit(state);
     }
 
+    /**
+     * Calculates shortest route based on distance to exit and pushes them to stack.
+     *
+     * @param state
+     */
     private void calculateRoute(EscapeState state){
         Vertex current = findVertex(state.getExit());
         route.push(state.getExit());
@@ -73,7 +82,11 @@ public class Escape {
     }
 
 
-
+    /**
+     * Uses the stack created in calculateRoute() to navigate out of the maze.
+     *
+     * @param state
+     */
     private void moveToExit(EscapeState state){
         route.pop();
         do{
@@ -85,6 +98,12 @@ public class Escape {
         }while(!route.isEmpty());
     }
 
+    /**
+     * Takes a node and returns the vertex that contains that node.
+     *
+     * @param node toFind
+     * @return Vertex
+     */
     public Vertex findVertex(Node toFind){
         for (Vertex v: all) {
             if(v.getNode().equals(toFind)){
@@ -94,6 +113,12 @@ public class Escape {
         return null; // Should not get to here - but required a return.
     }
 
+    /**
+     * Takes a set of vertices and returns the closest one based on distance.
+     *
+     * @param set of vertices
+     * @return Vertex
+     */
     public Vertex cheapestVertex(Set<Vertex> vertices){
         Vertex result = vertices.stream().sorted(Vertex::compareTo).findFirst().get();
         return result;
