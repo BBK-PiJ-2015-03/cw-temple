@@ -1,4 +1,4 @@
-package student;
+package student.OldAttempts;
 
 public class PriorityQueueException extends RuntimeException {
 

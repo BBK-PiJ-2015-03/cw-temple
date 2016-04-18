@@ -1,4 +1,4 @@
-    package student.NodeTree;
+    package student.ExploreTree;
 
     import game.NodeStatus;
 

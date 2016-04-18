@@ -1,4 +1,4 @@
-package student;
+package student.OldAttempts;
 
 import game.EscapeState;
 import game.ExplorationState;

@@ -4,13 +4,16 @@ package student;
 
 import game.EscapeState;
 import game.ExplorationState;
-import game.Node;
 import game.NodeStatus;
-import student.NodeTree.ExploreTreeNode;
-import student.NodeTree.ExploreTreeWrap;
-import student.NodeTree.TreeNode;
+import student.EscapeAlgorithm.Escape;
+import student.ExploreTree.ExploreTreeNode;
+import student.ExploreTree.ExploreTreeWrap;
+import student.ExploreTree.TreeNode;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Explorer {
@@ -18,9 +21,7 @@ public class Explorer {
     private TreeNode pathTree = new ExploreTreeNode(null);
     private TreeNode parentNode = new ExploreTreeNode(null);
     private Set<Long> visitedNodes = new HashSet<>();
-    private Stack<Node> solutionPath = new Stack<>();
-    private long MAX_VALUE = Integer.MAX_VALUE;
-    private Set<EscapeNode> escapeNodes = new HashSet<>();
+
 
 
     /**
@@ -61,6 +62,11 @@ public class Explorer {
         moveTo(state);
     }
 
+    /**
+     * Adds current states neighbours to trinary-tree
+     *
+     * @param state
+     */
     public void addNeighbours(ExplorationState state){
         List<NodeStatus> neighbours = closestNeighbour(state);
         if(pathTree.getInfo().getNode().equals(root.getInfo().getNode())) {
@@ -74,6 +80,10 @@ public class Explorer {
         }
     }
 
+    /**
+     * Moves through the maze using the tree, prioritises shortest distance and unvisited neighbours.
+     * @param state
+     */
     public void moveTo(ExplorationState state){
         do {
             if(pathTree.getlLink() != null && !visitedNodes.contains(pathTree.getlLink().getInfo().getNode())){
@@ -103,13 +113,21 @@ public class Explorer {
         }while (state.getDistanceToTarget() != 0);
     }
 
+    /**
+     * Backtrack using the tree until it reaches an unvisted neigbour
+     * @return
+     */
     public Long backTrack(){
         pathTree = parentNode;
         parentNode = pathTree.getParentNode();
         return pathTree.getInfo().getNode();
     }
 
-
+    /**
+     * Orders the current neighbours into a list by distance.
+     * @param state
+     * @return List of NodeStatus
+     */
     public List<NodeStatus> closestNeighbour(ExplorationState state) {
         List<NodeStatus> closest = state.getNeighbours().stream().collect(Collectors.toList());
         Collections.sort(closest, NodeStatus::compareTo);
@@ -140,111 +158,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        System.out.println(state.getVertices().size());
-        escapeNodes = state.getVertices()
-                                        .stream()
-                                        .map(node -> new EscapeNode(node, MAX_VALUE, false, null))
-                                        .collect(Collectors.toSet());
-
-        Stack<EscapeState> escapePath;
-        escapeNodes.stream()
-                         .filter(node -> state.getCurrentNode()
-                         .equals(node.getNode()))
-                         .forEach(node -> { state.getCurrentNode();
-                             for (Node neighbour : state.getCurrentNode().getNeighbours()) {
-                                node.setDistance(node.getNode().getEdge(neighbour).length);
-                                System.out.println(node.getDistance());
-                            }
-        });
-
-        nodeMapper(state.getCurrentNode(), state.getExit());
-
-
-
-
-
+        Escape start = new Escape();
+        start.run(state);
     }
-
-    public void nodeMapper(Node state, Node exit){
-        for (Node neighbour : state.getNeighbours()){
-            updateEscapeNode(neighbour, state.getEdge(neighbour).length);
-        }
-        state = closestNeighbour(state);
-        if(!state.equals(exit)){
-            nodeMapper(state, exit);
-        }
-        return;
-    }
-
-    public void updateEscapeNode(Node node, long length){
-        escapeNodes.stream().filter(curNode -> node.equals(curNode.getNode())).forEach(curNode -> {
-            curNode.setDistance(length);
-            curNode.setVisited(true);
-        });
-    }
-
-    public Node closestNeighbour(Node node){
-        long min = Integer.MAX_VALUE, cur = 0;
-        Node returnNode = node;
-        for(Node neighbour : node.getNeighbours()) {
-            for (EscapeNode curNode : escapeNodes) {
-                if (curNode.equals(neighbour)) {
-                    cur = curNode.getDistance();
-                    if (cur < min) {
-                        min = cur;
-                        returnNode = curNode.getNode();
-                    }
-                }
-            }
-        }
-        return returnNode;
-    }
-
-
-  /*      if(state.equals(target)){
-            return escapeSolution;
-        }
-        for (ExplorationState neighbour : state.getNeighbours()) {
-            if(state.getEdge(neighbour).length < timeRemaining){
-                moveTo();
-            }
-        }
-        escapeSolution.clear();
-        return escapeSolution;
-    }
-
-   public List<Node> escapePlan(EscapeState state){
-        root = pathTree;
-        parentNode = root;
-        pathTree.setInfo(new TreeWrap(state.getCurrentNode().getId(), null, state.getCurrentNode().getEdge(state.getCurrentNode()).length(), state.getCurrentNode().getTile().getGold()));
-        List<Node> nodeList = new ArrayList<>();
-        state.getCurrentNode().getEdge(state.getCurrentNode());
-        do {
-            if(pathTree.getlLink() != null && !visitedNodes.contains(pathTree.getlLink().getInfo().getNode())){
-                state.moveTo(pathTree.getlLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getlLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getlLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else if(pathTree.getmLink() != null && !visitedNodes.contains(pathTree.getmLink().getInfo().getNode())){
-                state.moveTo(pathTree.getmLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getmLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getmLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else if(pathTree.getrLink() != null && !visitedNodes.contains(pathTree.getrLink().getInfo().getNode())){
-                state.moveTo(pathTree.getrLink().getInfo().getNode());
-                visitedNodes.add(pathTree.getrLink().getInfo().getNode());
-                parentNode = pathTree;
-                pathTree = pathTree.getrLink();
-                pathTree.getInfo().setVisited(true);
-                addNeighbours(state);
-            } else {
-                state.moveTo(backTrack());
-            }
-        }while (state.getDistanceToTarget() != 0);
-        return nodeList;
-    }*/
 }

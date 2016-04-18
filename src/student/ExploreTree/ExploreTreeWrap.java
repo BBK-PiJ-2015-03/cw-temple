@@ -1,33 +1,15 @@
-package student.NodeTree;
+package student.ExploreTree;
 
 import game.NodeStatus;
 
 /**
  * Created by J2FX on 04/02/2016.
  */
-public class EscapeTreeWrap {
+public class ExploreTreeWrap implements TreeWrap {
     private Long node;
     private Long parentNode;
-    private int distance;
-    private int gold;
     private NodeStatus rootNode;
     private boolean visited = false;
-
-    public int getDistance() {
-        return distance;
-    }
-
-    public void setDistance(int distance) {
-        this.distance = distance;
-    }
-
-    public int getGold() {
-        return gold;
-    }
-
-    public void setGold(int gold) {
-        this.gold = gold;
-    }
 
     public Long getParentNode() {
         return parentNode;
@@ -61,10 +43,8 @@ public class EscapeTreeWrap {
         this.rootNode = rootNode;
     }
 
-    public EscapeTreeWrap(Long node, Long parentNode, int distance, int gold) {
+    public ExploreTreeWrap(Long node, Long parentNode) {
         setNode(node);
         setParentNode(parentNode);
-        setDistance(distance);
-        setGold(gold);
     }
 }

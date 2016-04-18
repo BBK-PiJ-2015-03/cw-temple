@@ -1,4 +1,4 @@
-package student;
+package student.ExploreTree;
 
 import game.Node;
 
